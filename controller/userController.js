@@ -2,6 +2,9 @@ const model = require("../model/index");
 const { Op } = require("sequelize");
 const controller = {};
 
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
 controller.getAll = async function (req, res) {
     try {
         const userData = await model.user.findAll();
@@ -34,6 +37,16 @@ controller.getUsername = async function (req, res) {
 };
 
 controller.createNew = async function (req, res) {
+    const token = await jwt.sign(
+        {
+            username: req.body.username,
+            password: req.body.username,
+        },
+        process.env.SECRET_TOKEN,
+        {
+            expiresIn: "24h",
+        }
+    );
     try {
         //   check data has already been created
         const checkData = await model.user.findAll({
@@ -51,14 +64,14 @@ controller.createNew = async function (req, res) {
                 .create({
                     username: req.body.username,
                     password: req.body.password,
-                    token: req.body.username + req.body.password,
+                    token: token,
                 })
                 .then((result) => {
                     res.status(201).json({
                         message: "user successful created", data: {
                             username: req.body.username,
                             password: req.body.password,
-                            token: req.body.username + req.body.password,
+                            token: token,
                         },
                     });
                 });
@@ -69,6 +82,16 @@ controller.createNew = async function (req, res) {
 };
 
 controller.editAt = async function (req, res) {
+    const token = await jwt.sign(
+        {
+            username: req.body.username,
+            password: req.body.username,
+        },
+        process.env.SECRET_TOKEN,
+        {
+            expiresIn: "24h",
+        }
+    );
     try {
         await model.user
             .findAll({ where: { id: req.body.id } })
@@ -78,7 +101,7 @@ controller.editAt = async function (req, res) {
                         {
                             username: req.body.username,
                             password: req.body.password,
-                            token: req.body.username + req.body.password,
+                            token: token,
                         },
                         { where: { id: req.body.id } }
                     );
@@ -88,7 +111,7 @@ controller.editAt = async function (req, res) {
                             id: req.body.id,
                             username: req.body.username,
                             password: req.body.password,
-                            token: req.body.username + req.body.password,
+                            token: token,
                         },
                     });
                 } else {
